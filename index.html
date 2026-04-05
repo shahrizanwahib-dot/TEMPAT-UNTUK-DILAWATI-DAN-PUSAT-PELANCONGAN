@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gedung Kosa Kata Pelancongan (Year 8)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Bebas+Neue&family=Poppins:wght@500;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --primary: #0f766e; /* teal-700 */
+            --secondary: #0ea5e9; /* sky-500 */
+            --accent: #f59e0b; /* amber-500 */
+            --bg-light: #f0fdfa; /* teal-50 */
+        }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg-light); 
+            margin: 0; 
+            overflow: hidden; 
+            color: #1e293b;
+        }
+        h1, h2, h3 { font-family: 'Poppins', sans-serif; }
+        
+        /* Slide System */
+        .slider-wrapper {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        .slide-container {
+            width: 1800vw; /* 18 slides */
+            height: 100%;
+            display: flex;
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .slide {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem;
+            position: relative;
+        }
+
+        /* UI Elements */
+        .card {
+            background: white;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 1300px;
+            text-align: center;
+            border-bottom: 8px solid var(--primary);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .card::-webkit-scrollbar { width: 8px; }
+        .card::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        .card::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .nav-btn {
+            position: absolute;
+            bottom: 2rem;
+            padding: 1rem 2rem;
+            background: var(--primary);
+            color: white;
+            border-radius: 9999px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 50;
+        }
+        .nav-btn:hover { transform: translateY(-3px); background: #0f172a; }
+        .nav-prev { left: 3rem; }
+        .nav-next { right: 3rem; }
+        
+        /* Flashcard Styles */
+        .vocab-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            width: 100%;
+        }
+        .vocab-card {
+            background: #fff;
+            border: 4px solid #e2e8f0;
+            border-radius: 1rem;
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
+        .vocab-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            border-color: var(--secondary);
+        }
+        .vocab-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background-color: #f1f5f9;
+        }
+        .vocab-text {
+            padding: 1rem;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #0f172a;
+            font-family: 'Poppins', sans-serif;
+            text-transform: uppercase;
+        }
+        .vocab-en {
+            font-size: 1.25rem;
+            color: #64748b;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            padding-bottom: 1rem;
+            text-transform: none;
+        }
+
+        /* Interactive Buttons */
+        .cfu-btn {
+            background: white;
+            border: 4px solid #e2e8f0;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #334155;
+            text-align: center;
+        }
+        .cfu-btn:hover { border-color: var(--secondary); transform: translateY(-2px); background: #f8fafc; }
+        .cfu-correct { background: #22c55e !important; border-color: #16a34a !important; color: white !important; }
+        .cfu-wrong { background: #ef4444 !important; border-color: #dc2626 !important; color: white !important; animation: shake 0.4s; }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        .tlac-tag {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            background: #fef08a;
+            color: #854d0e;
+            padding: 0.5rem 1rem;
+            border-radius: 99px;
+            font-weight: bold;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        .page-num {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="slider-wrapper">
+        <div class="slide-container" id="slider">
+            
+            <!-- Slide 1: Cover -->
+            <div class="slide bg-teal-900 text-white">
+                <i data-lucide="library" class="w-32 h-32 text-amber-400 mb-6 drop-shadow-lg"></i>
+                <h1 class="text-7xl font-black mb-4 tracking-tight text-center uppercase">Gedung Kosa Kata</h1>
+                <h2 class="text-4xl text-teal-200 font-medium">Tempat Dilawati & Pelancongan</h2>
+                <div class="mt-12 inline-block bg-teal-600 px-8 py-4 rounded-full text-lg font-bold tracking-widest uppercase shadow-lg border border-teal-500">
+                    Sesi Pengenalan IGCSE Year 8
+                </div>
+            </div>
+
+            <!-- Slide 2: Objektif -->
+            <div class="slide">
+                <div class="card border-b-8 border-teal-800">
+                    <h2 class="text-5xl font-bold text-slate-900 mb-10 uppercase">Misi Kosa Kata Hari Ini</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+                        <div class="bg-blue-50 p-8 rounded-2xl border-2 border-blue-200 shadow-sm">
+                            <i data-lucide="eye" class="w-16 h-16 text-blue-600 mb-6"></i>
+                            <h3 class="text-3xl font-bold mb-4">1. Lihat Gambar</h3>
+                            <p class="text-gray-600 text-xl">Kaitkan gambar dengan perkataan Melayu.</p>
+                        </div>
+                        <div class="bg-amber-50 p-8 rounded-2xl border-2 border-amber-200 shadow-sm">
+                            <i data-lucide="layers" class="w-16 h-16 text-amber-600 mb-6"></i>
+                            <h3 class="text-3xl font-bold mb-4">2. 5 Kategori</h3>
+                            <p class="text-gray-600 text-xl">Belajar lebih 20 perkataan ikut kumpulan.</p>
+                        </div>
+                        <div class="bg-green-50 p-8 rounded-2xl border-2 border-green-200 shadow-sm">
+                            <i data-lucide="brain" class="w-16 h-16 text-green-600 mb-6"></i>
+                            <h3 class="text-3xl font-bold mb-4">3. Uji Minda</h3>
+                            <p class="text-gray-600 text-xl">Main teka-teki ganjil (Odd-one-out).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3: Intro Kategori 1 -->
+            <div class="slide bg-emerald-600 text-white">
+                <i data-lucide="tree-pine" class="w-32 h-32 text-emerald-200 mb-6"></i>
+                <h1 class="text-7xl font-black mb-4 uppercase tracking-widest">Kategori 1</h1>
+                <p class="text-4xl text-emerald-100 font-bold">Alam Semula Jadi (Nature)</p>
+            </div>
+
+            <!-- Slide 4: Vocab Alam 1 -->
+            <div class="slide">
+                <div class="tlac-tag"><i data-lucide="volume-2"></i> Sebut bersama-sama!</div>
+                <div class="card w-full max-w-6xl">
+                    <h2 class="text-4xl font-bold text-slate-800 mb-8 border-b-4 border-slate-200 pb-4 inline-block uppercase">Kawasan Air</h2>
+                    
+                    <div class="vocab-grid">
+                        <div class="vocab-card border-blue-200 hover:border-blue-500">
+                            <!-- EXACT FILENAME MATCHING MARKDOWN -->
+                            <img src="kosa-pantai.jpg" alt="Pantai" class="vocab-img" onerror="this.src='https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&q=80&w=400';">
+                            <div class="vocab-text text-blue-700">Pantai</div>
+                            <div class="vocab-en">Beach</div>
+                        </div>
+                        <div class="vocab-card border-blue-200 hover:border-blue-500">
+                            <img src="kosa-pulau.jpg" alt="Pulau" class="vocab-img" onerror="this.src='https://images.unsplash.com/photo-1559128010-7c1ad6e1b6a5?auto=format&fit=crop&q=80&w=400';">
+                            <div class="vocab-text text-blue-700">Pulau</div>
+                            <div class="vocab-en">Island</div>
+                        </div>
+                        <div class="vocab-card border-blue-200 hover:border-blue-500">
+                            <img src="kosa-airterjun.jpg" alt="Air Terjun" class="vocab-img" onerror="this.src='https://images.unsplash.com/photo-1432405972618-c6c00d0a14de?auto=format&fit=crop&q=80&w=400';">
+                            <div class="vocab-text text-blue-700">Air Terjun</div>
+                            <div class="vocab-en">Waterfall</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 5: Vocab Alam 2 -->
+            <div class="slide">
+                <div class="tlac-tag"><i data-lucide="volume-2"></i> Sebut bersama-sama!</div>
+                <div class="card w-full max-w-6xl">
+                    <h2 class="text-4xl font-bold text-slate-800 mb-8 border-b-4 border-slate-200 pb-4 inline-block uppercase">Kawasan Darat</h2>
+                    
+                    <div class="vocab-grid">
+                        <div class="vocab-card border-green-200 hover:border-green-500">
+                            <img src="kosa-gunung.jpg" alt="Gunung" class="vocab-img" onerror="this.src='https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&q=80&w=400';">
+                            <div class="vocab-text text-green-700">Gunung</div>
+                            <div class="vocab-en">Mountain</div>
+                        </div>
+                        <div class="vocab-card border-green-200 hover:border-green-500">
+                            <img src="kosa-gua.jpg" alt="Gua" class="vocab-img" onerror="this.src='https://images.unsplash.com/photo-1549488344-c6e7bc6e0809?auto=format&fit=crop&q=80&w=400';">
+                            <div class="vocab-text text-stone-700">Gua</div>
+                            <div class="vocab-en">Cave</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 6: Intro Kategori 2 -->
+            <div class="slide bg-sky-600 text-white">
+                <i data-lucide="building-2" class="w-32 h-32 text-sky-200 mb-6"></i>
+                <h1 class="text-7xl font-black mb-4 uppercase tracking-widest">Kategori 2</h1>
+                <p class="text-4xl text-sky-100 font-bold">Bandar & Moden (City & Modern Attractions)</p>
+            </div>
+
+            <!-- Slide 7: Vocab Bandar 1 -->
+            <div class="slide">
+                <div class="tlac-tag"><i data-lucide="volume-2"></i> Sebut bersama-sama!</div>
+                <div class="card w-full max-w-6xl">
+                    <div class="vocab-grid">
+                        <div class="vocab-card border-indigo-200 hover:border-indigo-500">
+                            <img src="kosa-menara.jpg" alt="Menara" class="vocab-img" onerror="this.src='https://images.unsplash.com/photo-1596422846543-74c6fc1e0dfb?auto=format&fit=crop&q=80&w=400';">
+                            <div class="vocab-text text-indigo-700">Menara</div>
+                            <div class="vocab-en">Tower</div>
+                        </div>
+                        <div class="vocab-card border-indigo-200 hover:border-indigo-500">
+                            <img src="kosa-mall.jpg" alt="Pusat Beli-belah" class="vocab-img" onerror="this.src='https://images.unsplash.com/photo-1519567281799-9712bf37da50?auto=format&fit=crop&q=80&w=400';">
+                            <div class="vocab-text text-indigo-700">Pusat Beli-belah</div>
+                            <div class="vocab-en">Shopping Mall</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 8: Vocab Bandar 2 -->
+            <div class="slide">
+                <div class="tlac-tag"><i data-lucide="volume-2"></i> Sebut bersama-sama!</div>
+                <div class="card w-full max-w-6xl">
+                    <div class="vocab-grid">
+                        <div class="vocab-card border-pink-200 hover:border-pink-500">
+                            <img src="kosa-tamantema.jpg" alt="Taman Tema" class="vocab-img" onerror="this.src='https://images.unsplash.com/photo-1513883049090-d0b7439799bf?auto=format&fit=crop&q=80&w=400';">
+                            <div class="vocab-text text-pink-700">Taman Tema</div>
+                            <div class="vocab-en">Theme Park</div>
+                        </div>
+                        <div class="vocab-card border-amber-200 hover:border-amber-500">
+                            <img src="kosa-zoo.jpg" alt="Zoo" class="vocab-img" onerror="this.src='https://images.unsplash.com/photo-1560088921-2f3b9277f722?auto=format&fit=crop&q=80&w=400';">
+                            <div class="vocab-text text-amber-700">Zoo</div>
+                            <div class="vocab-en">Zoo</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 9: Intro Kategori 3 -->
+            <div class="slide bg-amber-600 text-white">
+                <i data-lucide="landmark" class="w-32 h-32 text-amber-200 mb-6"></i>
+                <h1 class="text-7xl font-black mb-4 uppercase tracking-widest">Kategori 3</h1>
+                <p class="text-4xl text-amber-100 font-bold">Sejarah & Budaya (History & Culture)</p>
+            </div>
+
+            <!-- Slide 10: Vocab Sejarah -->
+            <div class="slide">
+                <div class="tlac-tag"><i data-lucide="volume-2"></i> Sebut bersama-sama!</div>
+                <div class="card w-full max-w-6xl">
+                    <div class="vocab-grid">
+                        <div class="vocab-card border-amber-300 hover:border-amber-600">
+                            <img src="kosa-muzium.jpg" alt="Muzium" class="vocab-img" onerror="this.src='https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&q=80&w=400';">
+                            <div class="vocab-text text-amber-800">Muzium</div>
+                            <div class="vocab-en">Museum</div>
+                        </div>
+                        <div class="vocab-card border-amber-300 hover:border-amber-600">
+                            <img src="kosa-kotalama.jpg" alt="Kota Lama" class="vocab-img" onerror="this.src='https://images.unsplash.com/photo-1558284561-8cece13540ce?auto=format&fit=crop&q=80&w=400';">
+                            <div class="vocab-text text-amber-800">Kota Lama</div>
+                            <div class="vocab-en">Old Fort / Old City</div>
+                        </div>
+                        <div class="vocab-card border-amber-300 hover:border-amber-600">
+                            <img src="kosa-tugu.jpg" alt="Tugu" class="vocab-img" onerror="this.src='https://images.unsplash.com/photo-1610419262071-72c6767576a0?auto=format&fit=crop&q=80&w=400';">
+                            <div class="vocab-text text-amber-800">Tugu Peringatan</div>
+                            <div class="vocab-en">Monument</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 11: Intro Kategori 4 -->
+            <div class="slide bg-rose-600 text-white">
+                <i data-lucide="luggage" class="w-32 h-32 text-rose-200 mb-6"></i>
+                <h1 class="text-7xl font-black mb-4 uppercase tracking-widest">Kategori 4</h1>
+                <p class="text-4xl text-rose-100 font-bold">Barang Percutian (Travel Items)</p>
+            </div>
+
+            <!-- Slide 12: Vocab Barangan -->
+            <div class="slide">
+                <div class="tlac-tag"><i data-lucide="volume-2"></i> Sebut bersama-sama!</div>
+                <div class="card w-full max-w-6xl">
+                    <div class="vocab-grid">
+                        <div class="vocab-card border-rose-200 hover:border-rose-500">
+                            <img src="kosa-kamera.jpg" alt="Kamera" class="vocab-img" onerror="this.src='https://images.unsplash.com/photo-1516245834210-c4c142787335?auto=format&fit=crop&q=80&w=400';">
+                            <div class="vocab-text text-rose-700">Kamera</div>
+                            <div class="vocab-en">Camera</div>
+                        </div>
+                        <div class="vocab-card border-rose-200 hover:border-rose-500">
+                            <img src="kosa-bagasi.jpg" alt="Bagasi" class="vocab-img" onerror="this.src='https://images.unsplash.com/photo-1552858725-2758b5fb1286?auto=format&fit=crop&q=80&w=400';">
+                            <div class="vocab-text text-rose-700">Bagasi / Beg</div>
+                            <div class="vocab-en">Luggage / Bag</div>
+                        </div>
+                        <div class="vocab-card border-rose-200 hover:border-rose-500">
+                            <img src="kosa-tiket.jpg" alt="Tiket" class="vocab-img" onerror="this.src='https://images.unsplash.com/photo-1544644181-1484b3f8c853?auto=format&fit=crop&q=80&w=400';">
+                            <div class="vocab-text text-rose-700">Tiket</div>
+                            <div class="vocab-en">Ticket</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 13: Intro Kategori 5 -->
+            <div class="slide bg-violet-600 text-white">
+                <i data-lucide="activity" class="w-32 h-32 text-violet-200 mb-6"></i>
+                <h1 class="text-7xl font-black mb-4 uppercase tracking-widest">Kategori 5</h1>
+                <p class="text-4xl text-violet-100 font-bold">Kata Kerja (Travel Verbs)</p>
+            </div>
+
+            <!-- Slide 14: Vocab Kata Kerja -->
+            <div class="slide">
+                <div class="tlac-tag"><i data-lucide="volume-2"></i> Sebut bersama-sama!</div>
+                <div class="card w-full max-w-6xl">
+                    <div class="vocab-grid">
+                        <div class="vocab-card border-violet-200 hover:border-violet-500">
+                            <img src="kosa-berenang.jpg" alt="Berenang" class="vocab-img" onerror="this.src='https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&q=80&w=400';">
+                            <div class="vocab-text text-violet-700">Berenang</div>
+                            <div class="vocab-en">To swim</div>
+                        </div>
+                        <div class="vocab-card border-violet-200 hover:border-violet-500">
+                            <img src="kosa-mendaki.jpg" alt="Mendaki" class="vocab-img" onerror="this.src='https://images.unsplash.com/photo-1551632811-561732d1e306?auto=format&fit=crop&q=80&w=400';">
+                            <div class="vocab-text text-violet-700">Mendaki</div>
+                            <div class="vocab-en">To hike / climb</div>
+                        </div>
+                        <div class="vocab-card border-violet-200 hover:border-violet-500">
+                            <img src="kosa-melawat.jpg" alt="Melawat" class="vocab-img" onerror="this.src='https://images.unsplash.com/photo-1521633215284-884d5df2f019?auto=format&fit=crop&q=80&w=400';">
+                            <div class="vocab-text text-violet-700">Melawat</div>
+                            <div class="vocab-en">To visit</div>
+                        </div>
+                        <div class="vocab-card border-violet-200 hover:border-violet-500">
+                            <img src="kosa-membeli.jpg" alt="Membeli" class="vocab-img" onerror="this.src='https://images.unsplash.com/photo-1520110120835-c96534a4c984?auto=format&fit=crop&q=80&w=400';">
+                            <div class="vocab-text text-violet-700">Membeli cenderamata</div>
+                            <div class="vocab-en">To buy souvenirs</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 15: CFU ODD ONE OUT -->
+            <div class="slide">
+                <div class="tlac-tag"><i data-lucide="brain"></i> CFU: Odd-One-Out (Mana Yang Ganjil?)</div>
+                <div class="card w-full max-w-5xl bg-slate-900 text-white border-b-8 border-yellow-400">
+                    <h2 class="text-5xl font-black mb-4 text-yellow-400 uppercase">Cari Yang Ganjil!</h2>
+                    <p class="text-2xl text-slate-300 mb-10">Tiga tempat ini di Bandar. Mana satu tempat Alam Semula Jadi?</p>
+                    
+                    <div class="grid grid-cols-2 gap-6 max-w-4xl mx-auto">
+                        <button class="cfu-btn bg-slate-800 text-white border-slate-600 hover:bg-slate-700" onclick="checkCFU(this, false)">Pusat Beli-belah</button>
+                        <button class="cfu-btn bg-slate-800 text-white border-slate-600 hover:bg-slate-700" onclick="checkCFU(this, true)">Gunung</button>
+                        <button class="cfu-btn bg-slate-800 text-white border-slate-600 hover:bg-slate-700" onclick="checkCFU(this, false)">Muzium</button>
+                        <button class="cfu-btn bg-slate-800 text-white border-slate-600 hover:bg-slate-700" onclick="checkCFU(this, false)">Menara</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 16: CFU TANGKAP GAMBAR -->
+            <div class="slide">
+                <div class="tlac-tag"><i data-lucide="brain"></i> CFU: Kefahaman Logik</div>
+                <div class="card w-full max-w-5xl bg-slate-900 text-white border-b-8 border-yellow-400">
+                    <h2 class="text-5xl font-black mb-4 text-yellow-400 uppercase">Pilih Jawapan Tepat!</h2>
+                    <p class="text-2xl text-slate-300 mb-10">"Saya mahu melihat hidupan liar (wildlife) seperti harimau dan gajah."</p>
+                    
+                    <div class="grid grid-cols-2 gap-6 max-w-4xl mx-auto">
+                        <button class="cfu-btn bg-slate-800 text-white border-slate-600 hover:bg-slate-700" onclick="checkCFU(this, false)">Gua</button>
+                        <button class="cfu-btn bg-slate-800 text-white border-slate-600 hover:bg-slate-700" onclick="checkCFU(this, false)">Taman Tema</button>
+                        <button class="cfu-btn bg-slate-800 text-white border-slate-600 hover:bg-slate-700" onclick="checkCFU(this, true)">Zoo</button>
+                        <button class="cfu-btn bg-slate-800 text-white border-slate-600 hover:bg-slate-700" onclick="checkCFU(this, false)">Muzium</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 17: Stretch It (Cold Call) -->
+            <div class="slide">
+                <div class="tlac-tag"><i data-lucide="mic"></i> Cold Call & Stretch It!</div>
+                <div class="card w-full max-w-5xl bg-blue-50 border-4 border-blue-200">
+                    <h2 class="text-5xl font-black text-blue-900 mb-8 uppercase">Ujian Ingatan</h2>
+                    <i data-lucide="brain-circuit" class="w-32 h-32 text-blue-500 mx-auto mb-8"></i>
+                    
+                    <p class="text-3xl font-bold text-slate-700 leading-relaxed max-w-3xl mx-auto">
+                        Sebutkan <span class="text-blue-600 underline">satu nama tempat</span> dan <span class="text-orange-600 underline">satu barang</span> yang perlu anda bawa ke sana.
+                    </p>
+                    <p class="mt-6 text-xl text-gray-500 italic">Contoh: Saya pergi ke pantai bawa cermin mata hitam.</p>
+                </div>
+            </div>
+
+            <!-- Slide 18: Kesimpulan & Tamat -->
+            <div class="slide bg-gradient-to-br from-teal-700 to-sky-900 text-white">
+                <i data-lucide="award" class="w-40 h-40 text-yellow-400 mb-8 drop-shadow-2xl"></i>
+                <h1 class="text-7xl font-black mb-6 uppercase text-center tracking-tight text-white">Tahniah!</h1>
+                <p class="text-3xl text-teal-100 mb-12 text-center max-w-3xl leading-relaxed">Anda telah berjaya menghafal lebih 20 kosa kata baharu tentang Pelancongan!</p>
+                <div class="flex gap-8">
+                    <div class="bg-white/10 px-8 py-6 rounded-2xl text-center border border-white/20">
+                        <span class="block text-5xl font-black text-amber-400">A+</span>
+                        <span class="text-lg font-bold uppercase tracking-widest mt-2 block opacity-80">Year 8 Vocab</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Navigation -->
+        <button class="nav-btn nav-prev" onclick="moveSlide(-1)" id="prevBtn" style="display: none;">
+            <i data-lucide="chevron-left" class="w-8 h-8"></i> Kembali
+        </button>
+        <button class="nav-btn nav-next" onclick="moveSlide(1)" id="nextBtn">
+            Seterusnya <i data-lucide="chevron-right" class="w-8 h-8"></i>
+        </button>
+        <div class="page-num" id="pageNum">1 / 18</div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        let currentSlide = 0;
+        const totalSlides = 18;
+        const slider = document.getElementById('slider');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const pageNum = document.getElementById('pageNum');
+
+        function moveSlide(direction) {
+            currentSlide += direction;
+            
+            if (currentSlide < 0) currentSlide = 0;
+            if (currentSlide >= totalSlides) currentSlide = totalSlides - 1;
+
+            slider.style.transform = `translateX(-${currentSlide * 100}vw)`;
+
+            prevBtn.style.display = currentSlide === 0 ? 'none' : 'flex';
+            
+            if (currentSlide === totalSlides - 1) {
+                nextBtn.innerHTML = '<i data-lucide="rotate-ccw" class="w-8 h-8"></i> Mula Semula';
+                lucide.createIcons();
+            } else if (currentSlide === totalSlides) {
+                 currentSlide = 0;
+                 slider.style.transform = `translateX(0)`;
+                 nextBtn.innerHTML = 'Seterusnya <i data-lucide="chevron-right" class="w-8 h-8"></i>';
+                 lucide.createIcons();
+            } else {
+                nextBtn.innerHTML = 'Seterusnya <i data-lucide="chevron-right" class="w-8 h-8"></i>';
+                lucide.createIcons();
+            }
+            
+            pageNum.innerText = `${currentSlide + 1} / ${totalSlides}`;
+
+            document.querySelectorAll('.cfu-correct, .cfu-wrong').forEach(el => {
+                el.classList.remove('cfu-correct', 'cfu-wrong');
+            });
+        }
+
+        nextBtn.addEventListener('click', (e) => {
+            if(currentSlide === totalSlides - 1 && e.target.closest('button').innerText.includes('Mula Semula')) {
+                currentSlide = -1; 
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            const isTyping = e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT';
+            if (e.key === 'f' && !isTyping) {
+                if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(err => console.log(err));
+                else document.exitFullscreen();
+            }
+            if (!isTyping) {
+                if (e.key === 'ArrowRight' && currentSlide < totalSlides - 1) moveSlide(1);
+                if (e.key === 'ArrowLeft' && currentSlide > 0) moveSlide(-1);
+            }
+        });
+
+        function checkCFU(btn, isCorrect) {
+            const siblings = btn.parentElement.children;
+            for(let i=0; i<siblings.length; i++) {
+                siblings[i].classList.remove('cfu-correct', 'cfu-wrong');
+            }
+
+            if (isCorrect) {
+                btn.classList.add('cfu-correct');
+            } else {
+                btn.classList.add('cfu-wrong');
+                setTimeout(() => {
+                    btn.classList.remove('cfu-wrong');
+                }, 400); 
+            }
+        }
+    </script>
+</body>
+</html>
